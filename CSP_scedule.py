@@ -45,8 +45,9 @@ activities = ['AI',
               'Leisure']
 
 
-time_slots = [  # domain
-                 (1,8), (1,9), (1,10), (2,8)
+time_slots = [
+    (1,16), (1,17), (1,18), (1,19), (1,20), (1, 21),
+    (2,9), (2,18), (2,20), (2,21)
 ]
 
 csp_Scedule.domains_pack = activities
@@ -55,22 +56,42 @@ for t in time_slots:
     csp_Scedule.add_variable(t, copy.deepcopy(activities))
 
 
-def AI_is_done(partial_assignment):
+def AI_is_done(partial_assignment, coef):
     AI_time = 0
     for t_s in partial_assignment:
         if partial_assignment[t_s] == ['AI']:
             AI_time += 1
-    if AI_time < 5:
-        return AI_time / 5
+    if AI_time <= 5:
+        return AI_time * coef
     else:
         if AI_time > 5:
             return 1 + (AI_time - 5) / AI_time
-        else:
-            return 1
 
+
+def Leisure(partial_assignment, coef):
+    Leisure = 0
+    for t_s in partial_assignment:
+        if partial_assignment[t_s] == ['Leisure']:
+            Leisure += 1
+    return Leisure * coef
+
+
+def no_more_then_4hrs_study_in_a_row(partial_assignment, coef):
+    single_study_session_time = 0
+    overtime = 0
+    for t_s in partial_assignment:
+        if partial_assignment[t_s] in [['AI'], ['WEB']]:
+            single_study_session_time+=1
+        else:
+            single_study_session_time=0
+        if (single_study_session_time>4):
+            overtime+=1
+    return - overtime * coef
 
 def total_positive(partial_assignment):
-    return AI_is_done(partial_assignment)
+    return AI_is_done(partial_assignment, 1) + \
+           Leisure(partial_assignment, 0.8) + \
+           no_more_then_4hrs_study_in_a_row(partial_assignment, 0.2)
 
 
 class csp_solver():
@@ -130,7 +151,7 @@ class csp_solver():
 
         #k_best = self.remove_full_assignments(k_best)
 
-        if (len(not_assigned_variables) > 0):
+        if (len(not_assigned_variables) > 1):
             reduced_variables = copy.deepcopy(not_assigned_variables)
             reduced_variables.remove(next_timeslot)
             for assignment in k_best:
@@ -186,4 +207,4 @@ class csp_solver():
 
 
 solver = csp_solver()
-solver.solve(csp_Scedule, 3)
+solver.solve(csp_Scedule, 1)

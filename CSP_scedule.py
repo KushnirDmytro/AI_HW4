@@ -47,7 +47,15 @@ activities = ['AI',
 
 time_slots = [
     (1,16), (1,17), (1,18), (1,19), (1,20), (1, 21),
-    (2,9), (2,18), (2,20), (2,21)
+     (2,9), (2,18), (2,20), (2,21),
+ (3,9), (3,18), (3,20), (3,21),
+ (4,9), (4,16),(4,17),(4,18),(4,19), (4,21), (4,22),
+#
+ (5,9), (5,10),(5,11),(5,12),(5,13), (5,14), (5,15), (5,16), (5,17),(5,18),(5,19),(5,20), (5,21),
+#
+ (6,9), (6,10),(6,11),(6,12),(6,13), (6,14), (6,15), (6,16), (6,17),(6,18),(6,19),(6,20), (6,21),
+#
+ (7,9), (7,10),(7,11),(7,12),(7,13), (7,14), (7,15), (7,16), (7,17),(7,18),(7,19),(7,20), (7,21)
 ]
 
 csp_Scedule.domains_pack = activities
@@ -61,11 +69,11 @@ def AI_is_done(partial_assignment, coef):
     for t_s in partial_assignment:
         if partial_assignment[t_s] == 'AI':
             AI_time += 1
-    if AI_time <= 5:
+    if AI_time <= 30:
         return AI_time * coef
     else:
-        if AI_time > 5:
-            return 1 + (AI_time - 5) / AI_time
+        if AI_time > 30:
+            return 1 + (AI_time - 30) / AI_time
 
 
 def Leisure(partial_assignment, coef):
@@ -102,7 +110,7 @@ class csp_solver():
     def plot_week(self, assignment):
         week_matrix = [[0 for col in range(7)] for row in range(24)]
         for elements in assignment:
-            week_matrix[elements[1]][elements[0]] = assignment[elements]
+            week_matrix[elements[1]][elements[0]-1] = assignment[elements]
         placeholder = ' __=__ '
         header = ["MON","TUE", "WED", "THS", "FRD", "SAT", "SUN"]
         time = 0

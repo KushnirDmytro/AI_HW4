@@ -59,7 +59,7 @@ for t in time_slots:
 def AI_is_done(partial_assignment, coef):
     AI_time = 0
     for t_s in partial_assignment:
-        if partial_assignment[t_s] == ['AI']:
+        if partial_assignment[t_s] == 'AI':
             AI_time += 1
     if AI_time <= 5:
         return AI_time * coef
@@ -71,7 +71,7 @@ def AI_is_done(partial_assignment, coef):
 def Leisure(partial_assignment, coef):
     Leisure = 0
     for t_s in partial_assignment:
-        if partial_assignment[t_s] == ['Leisure']:
+        if partial_assignment[t_s] == 'Leisure':
             Leisure += 1
     return Leisure * coef
 
@@ -80,7 +80,7 @@ def no_more_then_4hrs_study_in_a_row(partial_assignment, coef):
     single_study_session_time = 0
     overtime = 0
     for t_s in partial_assignment:
-        if partial_assignment[t_s] in [['AI'], ['WEB']]:
+        if partial_assignment[t_s] in ['AI', 'WEB']:
             single_study_session_time+=1
         else:
             single_study_session_time=0
@@ -95,6 +95,32 @@ def total_positive(partial_assignment):
 
 
 class csp_solver():
+
+    def center_string(self, to_print, width, filler = " "):
+        return filler * ((width - len(to_print)) // 2) + str(to_print) +  filler * (((width - len(to_print)) + 1) // 2)
+
+    def plot_week(self, assignment):
+        week_matrix = [[0 for col in range(7)] for row in range(24)]
+        for elements in assignment:
+            week_matrix[elements[1]][elements[0]] = assignment[elements]
+        placeholder = ' __=__ '
+        header = ["MON","TUE", "WED", "THS", "FRD", "SAT", "SUN"]
+        time = 0
+        week_line = self.center_string(" ", len(placeholder), " ") + "  "
+        for day in header:
+            week_line += self.center_string(day, len(placeholder), " ")
+        print(week_line)
+        for rows in week_matrix:
+            week_line = " " * ((len(placeholder) - len(str(time)))//2) + str(time) + ": " + " " * (((len(placeholder) - len(str(time)))+1)//2)
+            for cols in rows:
+                if cols != 0:
+                    week_line += " " * ((len(placeholder) - len(str(cols)))//2) + str(cols) + " " * (((len(placeholder) - len(str(cols)))+1)//2)
+                else:
+                    week_line += placeholder
+            print(week_line)
+            time += 1
+
+
     def solve(self, csp, k_best):
         self.csp = csp
 
@@ -114,7 +140,8 @@ class csp_solver():
             print('Found %d optimal assignments in %d operations' % (len(self.current_assignments), self.num_operations))
             self.current_assignments.sort(key=total_positive)
             for assignment in self.current_assignments:
-                print(assignment)
+                self.plot_week(assignment)
+                #print(assignment)
                 print(total_positive(assignment))
         else:
             print('No assignments was found.')
@@ -136,12 +163,12 @@ class csp_solver():
         next_timeslot = self.choose_next_variable(partial_assignment)
 
         new_assignments = []
-        for tasks in self.csp.domains_pack:
+        for task in self.csp.domains_pack:
             self.num_operations += 1
 
             updated_assignment = copy.deepcopy(partial_assignment)
 
-            updated_assignment[next_timeslot] = [tasks]
+            updated_assignment[next_timeslot] = task
 
             new_assignments.append(updated_assignment)
 

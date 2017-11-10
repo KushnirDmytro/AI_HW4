@@ -1,13 +1,16 @@
 import copy
-
+import time
 
 class CSP(object):
     def __init__(self):
         self.variables = []
-        self.domains = {}
+        #self.domains = {}
         #self.factors = {}
         self.domains_pack = {}
         self.assigned_domains = {}
+        self.previous_assignments_level = [{}]
+        self.current_level_assignments = []
+        self.this_level_number = 0
 
     def add_variable(self, variable, domain):
         """
@@ -15,11 +18,12 @@ class CSP(object):
         :param variable: any type
         :param domain: list of possible values for teh variable
         """
+
         if variable in self.variables: raise ValueError('This CSP already contains variable', variable,
                                                         ', please use another name or check the consistency of your code.')
         if type(domain) is not list: raise ValueError('Domain should be a list.')
         self.variables.append(variable)
-        self.domains[variable] = domain
+       # self.domains[variable] = domain
 
     def add_factor(self, variables, factor_function):
         """
@@ -47,15 +51,14 @@ activities = ['AI',
 
 time_slots = [
     (1,16), (1,17), (1,18), (1,19), (1,20), (1, 21),
-     (2,9), (2,18), (2,20), (2,21),
- (3,9), (3,18), (3,20), (3,21),
- (4,9), (4,16),(4,17),(4,18),(4,19), (4,21), (4,22),
-#
- (5,9), (5,10),(5,11),(5,12),(5,13), (5,14), (5,15), (5,16), (5,17),(5,18),(5,19),(5,20), (5,21),
-#
- (6,9), (6,10),(6,11),(6,12),(6,13), (6,14), (6,15), (6,16), (6,17),(6,18),(6,19),(6,20), (6,21),
-#
- (7,9), (7,10),(7,11),(7,12),(7,13), (7,14), (7,15), (7,16), (7,17),(7,18),(7,19),(7,20), (7,21)
+      (2,9), (2,18),
+      (2,20), (2,21),
+   (3,9), (3,18), (3,20), (3,21),
+ (4,9), (4,16),(4,17),
+    (4,18),(4,19), (4,21), (4,22),
+  (5,9), (5,10),(5,11),(5,12),(5,13), (5,14), (5,15), (5,16), (5,17),(5,18),(5,19),(5,20), (5,21),
+  (6,9), (6,10),(6,11),(6,12),(6,13), (6,14), (6,15), (6,16), (6,17),(6,18),(6,19),(6,20), (6,21),
+  (7,9), (7,10),(7,11),(7,12),(7,13), (7,14), (7,15), (7,16), (7,17),(7,18),(7,19),(7,20), (7,21)
 ]
 
 csp_Scedule.domains_pack = activities
@@ -131,21 +134,21 @@ class csp_solver():
 
     def solve(self, csp, k_best):
         self.csp = csp
-
-        # Dictionary for storing all valid assignments. Note, unlike standard CSP when we
-        # are interested only in one valid assignment, for this problem you need to
-        # find all valid assignments
         self.current_assignments = []
-
-        # Number of all valid assignments
-
-        # Number of times backtracking operation is called
         self.num_operations = 0
 
-        self.backtrack(copy.deepcopy(csp.assigned_domains), k_best, not_assigned_variables= copy.deepcopy(self.csp.variables))
+        exec_start = time.process_time()
+        self.backtrack(not_assigned_variables= copy.deepcopy(self.csp.variables),
+                       K_best=k_best,
+                       depth=0,
+                       work_with_node_in_prev_layer=0)
+        exec_end = time.process_time()
+        exec_time = exec_end - exec_start
+
+        self.current_assignments = self.choose_k_best(self.csp.current_level_assignments,  total_positive, k_best)
 
         if self.current_assignments != []:
-            print('Found %d optimal assignments in %d operations' % (len(self.current_assignments), self.num_operations))
+            print('Found %d optimal assignments in %d operations time %d seconds' % (len(self.current_assignments), self.num_operations, exec_time) )
             self.current_assignments.sort(key=total_positive)
             for assignment in self.current_assignments:
                 self.plot_week(assignment)
@@ -154,45 +157,68 @@ class csp_solver():
         else:
             print('No assignments was found.')
 
+
     def choose_k_best(self, arr, measure, k):
-        arr.sort(key=measure)
-        return arr[-k:]
+        #for border cases
+        if len(arr) <= k:
+            return arr
 
-    def update_global_assignments(self, assignments_array):
-        final_ass = []
+        #doing cache
+        cache_arr = []
+        cache_indx = 0
+        for el in arr:
+            cache_arr.append( (measure(el), cache_indx ) )
+            cache_indx+=1
+        cache_arr.sort(key = lambda x: x[0], reverse=True)
+        result = []
+        for best_index in range(k):
+            result.append(arr[ (cache_arr[best_index])[1] ])
+        #arr.sort(key=measure)
+        return result#arr[-k:]
 
+    def update_global_assignments(self, assignments_array, k):
         self.current_assignments.extend(assignments_array)
-        self.current_assignments = self.choose_k_best(self.current_assignments, total_positive, 3)
+        self.current_assignments = self.choose_k_best(self.current_assignments, total_positive, k)
 
 
 
-    def backtrack(self, partial_assignment, K_best, not_assigned_variables):
+    def backtrack(self, not_assigned_variables, K_best, depth, work_with_node_in_prev_layer):
 
-        next_timeslot = self.choose_next_variable(partial_assignment)
+        #next_timeslot = self.choose_next_variable(partial_assignment)
+
+        next_timeslot = not_assigned_variables[0]
 
         new_assignments = []
+
+        #if we've started new tree layer, update for this node
+        if (depth > self.csp.this_level_number):
+            self.csp.previous_assignments_level = self.choose_k_best(self.csp.current_level_assignments, total_positive, K_best)
+            self.csp.current_level_assignments = []
+            self.csp.this_level_number = depth
+
         for task in self.csp.domains_pack:
             self.num_operations += 1
-
-            updated_assignment = copy.deepcopy(partial_assignment)
-
+            updated_assignment = copy.deepcopy(self.csp.previous_assignments_level[work_with_node_in_prev_layer])
             updated_assignment[next_timeslot] = task
+            self.csp.current_level_assignments.append(updated_assignment)
 
-            new_assignments.append(updated_assignment)
 
-        k_best = self.choose_k_best(new_assignments, total_positive, K_best)
+        #k_best_arr = self.choose_k_best(new_assignments, total_positive, K_best)
 
-        self.update_global_assignments(k_best)
+        #self.update_global_assignments(new_assignments, K_best)
 
         #k_best = self.remove_full_assignments(k_best)
 
-        if (len(not_assigned_variables) > 1):
-            reduced_variables = copy.deepcopy(not_assigned_variables)
-            reduced_variables.remove(next_timeslot)
-            for assignment in k_best:
-                self.backtrack(copy.deepcopy(assignment), K_best, reduced_variables )
-        else:
-            self.current_assignments = k_best
+        if depth == 0 or (work_with_node_in_prev_layer == len(self.csp.previous_assignments_level) - 1) :
+            if (len(not_assigned_variables) > 1):
+                reduced_variables = copy.deepcopy(not_assigned_variables) #TODO not to copy and pass this array, use global one and index over it
+                reduced_variables.remove(next_timeslot)
+                next_level_worker_numbers = min(K_best, len(self.csp.current_level_assignments) )
+                for node_in_next_layer in range(next_level_worker_numbers):
+                    self.backtrack(copy.deepcopy(reduced_variables),  K_best, depth+1, node_in_next_layer)
+
+        # else:
+        #     self.current_assignments = k_best_arr
 
 
 
@@ -242,4 +268,4 @@ class csp_solver():
 
 
 solver = csp_solver()
-solver.solve(csp_Scedule, 1)
+solver.solve(csp_Scedule,5)

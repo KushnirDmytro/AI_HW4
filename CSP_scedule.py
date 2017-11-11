@@ -165,9 +165,7 @@ class csp_solver():
         #last node in workers layer
         if depth == 0 or (work_with_node_in_prev_layer == len(self.csp.previous_assignments_level) - 1) :
             if (next_variable_index < self.csp.last_variable_index - 1):
-                #self.csp.variables
-                #reduced_variables = copy.deepcopy(not_assigned_variables) #TODO not to copy and pass this array, use global one and index over it
-                #reduced_variables.remove(next_timeslot)
+
                 next_level_worker_numbers = min(K_best, len(self.csp.current_level_assignments) )
                 for node_in_next_layer in range(next_level_worker_numbers):
                     self.backtrack( K_best, depth+1, node_in_next_layer, next_variable_index+1)
@@ -308,7 +306,7 @@ def playing(partial_assignment, optimal_time, undesirable_time, coef):
 
 
 '''TODO
-Tune coeficients
+Tune coeficients if You want to check the model <=============================================
 '''
 AI_avarage_time = 10
 WEB_avarage_time = 10
@@ -318,9 +316,9 @@ not_doing_obligatory = obligatory_tasks/5
 weaknes = 0.8
 health_importance = weaknes
 enought_time_for_sport = 7
-games_addictivity = 0.5
+games_addictivity = 0.8 #1.1
 enoght_time_for_games = enought_time_for_sport
-really_enoght_time_for_games = enoght_time_for_games * 2
+really_enoght_time_for_games = enoght_time_for_games * 2 #true..
 daily_tiredness = 0.2
 
 def total_satisfaction(partial_assignment):

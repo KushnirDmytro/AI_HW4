@@ -321,6 +321,7 @@ enoght_time_for_games = enought_time_for_sport
 really_enoght_time_for_games = enoght_time_for_games * 2 #true..
 daily_tiredness = 0.2
 
+
 def total_satisfaction(partial_assignment):
     return AI_is_done(partial_assignment, Avarage_time=AI_avarage_time, coef=obligatory_tasks) + \
            WEB_is_done(partial_assignment, Avarage_time=WEB_avarage_time, coef=obligatory_tasks) + \
@@ -330,8 +331,6 @@ def total_satisfaction(partial_assignment):
             being_healthy_sport(partial_assignment, optimal_time=enought_time_for_sport,  coef=health_importance)  + \
 playing(partial_assignment, optimal_time=enought_time_for_sport, undesirable_time=really_enoght_time_for_games, coef=games_addictivity) + \
 optional(partial_assignment, coef=optional_tasks)
-
-
 
 
 solver = csp_solver()

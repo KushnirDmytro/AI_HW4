@@ -432,10 +432,6 @@ def try_to_finish_what_have_started(partial_assignment, continuity_bonus):
 
 
 '''TODO
-
-Games addictiviti (in a single session)
-
-
 Tune coeficients if You want to check the model <=============================================
 '''
 AI_avarage_time = 20

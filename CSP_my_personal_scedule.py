@@ -465,8 +465,6 @@ sport_time_to = 22
 
 
 def total_satisfaction(partial_assignment):
-    #print(no_more_then_4hrs_study_in_a_row(partial_assignment, coef=weaknes) )
-    #print(try_to_finish_what_have_started(partial_assignment, continuity_bonus=study_continuity_bonus) )
     return AI_is_done(partial_assignment, Avarage_time=AI_avarage_time, coef=obligatory_tasks) + \
            WEB_is_done(partial_assignment, Avarage_time=WEB_avarage_time, coef=obligatory_tasks) + \
            IoT_is_done(partial_assignment, Avarage_time=IoT_avarage_time, coef=obligatory_tasks) + \

@@ -34,7 +34,7 @@ activities = ['AI',
               'Sports',
               'Optional',
               'Games']
-
+study_activities = ['AI', 'WEB', 'Optional']
 
 time_slots = [
     #workdays with lectures
@@ -210,7 +210,7 @@ def Free_choice(partial_assignment, coef):
     return Leisure * coef
 
 
-def no_more_then_4hrs_study_in_a_row(partial_assignment, coef):  # TODO make factor for weekends
+def no_more_then_4hrs_study_in_a_row(partial_assignment, coef):
     single_study_session_time = 0
     previous_time_slot = (0, 0)  # init value
     overtime = 0
@@ -221,7 +221,7 @@ def no_more_then_4hrs_study_in_a_row(partial_assignment, coef):  # TODO make fac
         if t_s[1] != previous_time_slot[1] + 1 or t_s[0] != previous_time_slot[0]:
             single_study_session_time = 0
 
-        if this_time_slot in ['AI', 'WEB', 'Optional']:
+        if this_time_slot in study_activities:
             single_study_session_time += 1
         else:
             single_study_session_time = 0
